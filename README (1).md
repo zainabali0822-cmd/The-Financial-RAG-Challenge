@@ -32,31 +32,13 @@ different configs, not two separate copy-pasted scripts.
 
 ## Part 2: Engineering Reflection
 
-**The Bottleneck.** [Fill in once you have numbers.] Compare Hit Rate@5 against
-Groundedness/Factual Accuracy on the Baseline run. A low Hit Rate with tiny,
-non-overlapping 400-char chunks points to a retriever problem — the search never
-surfaces the right bulletin, so no amount of prompt engineering can fix the answer.
-A reasonable Hit Rate paired with low Factual Accuracy/Groundedness would instead
-point to a generator problem — the right page was found, but the model misread it.
+**The Bottleneck**
+My Baseline's Hit Rate@5 was 20.73%, meaning the retriever failed to surface the correct bulletin for roughly 4 out of 5 questions. Factual Accuracy was 0% and Groundedness was N/A (no numeric claims were extracted at all — the model mostly returned INSUFFICIENT_CONTEXT since it rarely had the right chunk to work from). Since Hit Rate was already this low, the primary bottleneck was the Retriever, not the Generator: the "Librarian" wasn't handing the "Student" the right page most of the time, so there was rarely a real answer for the model to get right or wrong in the first place.
 
-**The Metadata Fix.** [Fill in once you have numbers.] Adding year/month/quarter tags
-and pre-filtering FAISS search to the matching subset is expected to move Hit Rate@5
-and MRR the most, since it shrinks the search space before similarity is even computed.
-Groundedness and Factual Accuracy should improve too, but only as a downstream effect
-of the retrieval fix — they don't move on their own.
+**The Metadata Fix**
+Adding year/month/quarter metadata and pre-filtering FAISS search to the matching subset more than doubled retrieval performance — Hit Rate@5 rose from 20.73% to 45.12%, and MRR nearly doubled from 0.1742 to 0.3182. This confirms metadata filtering helped the Retrieval metrics directly, by shrinking the search space before similarity was computed. Groundedness moved too (from N/A to 29.88%), but this was a downstream effect: once retrieval started finding the right bulletin more often, the model had actual numeric content to draw from and ground its answers in. Factual Accuracy stayed at 0% in both configs, though — this points to a second, separate problem beyond retrieval: even when the correct chunk was retrieved (up to 45% of the time), the model's answers still didn't match the ground truth closely enough to be scored correct. That's worth digging into separately — likely the strict formatting/tolerance requirements of the scoring function, or the model echoing extra numbers alongside the right one.
 
-**Scaling Insight.** Scaling from this 8-year subset (2018–2025) to the full 1939–2025
-archive, the first component to break is the flat FAISS index. `IndexFlatIP` scans
-every vector per query (O(n)), so both memory footprint and query latency grow linearly
-with roughly 87 years of bulletins. At that scale, an IVF/HNSW-based FAISS index (or a
-managed vector DB with sharding) plus coarser metadata partitioning (e.g., per-decade
-indexes) would be needed so a single query doesn't have to touch the entire corpus.
+**Scaling Insight**
+Scaling from this 8-year subset (2018–2025) to the full 1939–2025 archive, the first component likely to break is the flat FAISS index (IndexFlatIP). It scans every vector per query — O(n) — so both memory footprint and query latency would grow roughly 10x with ~87 years of bulletins instead of 8. At that scale, an approximate index (IVF or HNSW) plus coarser metadata partitioning (e.g., per-decade sub-indexes) would be needed so a single query doesn't have to scan the entire 80-year corpus.
 
-## Setup to reproduce
 
-1. Open `FinancialRAG_Challenge.ipynb` in Google Colab.
-2. Add two Colab secrets: `treasury-rag1` (your Hugging Face token, read access) and
-   `GEMINI_API_KEY`.
-3. Run all cells top to bottom — the pipeline section runs both the Baseline and
-   Engineered configs, and the scorecard section prints the final numbers.
-4. Copy the printed scorecard into the table above.
