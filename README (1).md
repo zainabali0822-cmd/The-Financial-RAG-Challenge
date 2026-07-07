@@ -1,7 +1,7 @@
-# Financial RAG Challenge — Treasury Bulletins
+# Financial RAG Challenge
 
 **Name:** Zainab Ali
-**Recent Years Used:** 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025
+**Recent Years Used:** 2018-2025
 **Data Source:** [Databricks OfficeQA](https://huggingface.co/datasets/databricks/officeqa)
 **GitHub Link:** https://github.com/zainabali0822-cmd/The-Financial-RAG-Challenge
 
