@@ -8,19 +8,6 @@
 A Baseline vs. Engineered Retrieval-Augmented Generation (RAG) system for answering
 factual questions from U.S. Treasury Bulletins.
 
-Full code, outputs, and reflection: [`FinancialRAG_Challenge.ipynb`](./FinancialRAG_Challenge.ipynb)
-
-## Architecture
-
-| Component | Baseline | Engineered |
-|---|---|---|
-| Vector Database | FAISS `IndexFlatIP` (cosine) | FAISS `IndexFlatIP` (cosine) |
-| Embedding model | `multi-qa-MiniLM-L6-cos-v1` | `multi-qa-MiniLM-L6-cos-v1` |
-| Chunking Strategy | 400-char chunks, no overlap | 1200-char chunks, 250-char overlap |
-| Metadata | none | `year`, `month`, `quarter` tagged on every chunk |
-| Retrieval strategy | pure semantic search | year/month parsed from the query → pre-filter chunks to that subset → semantic search within it |
-| Generator | Gemini, with automatic model fallback (`2.5-flash-lite` → `2.0-flash-lite` → `2.0-flash-001` → `flash-lite-latest`) | same |
-| Prompt | strict single-line output | table-aware, instructs the model to check row/column intersections |
 
 **How metadata was used to filter search:** each chunk is tagged with the `year`,
 `month`, and `quarter` parsed from its source bulletin's filename. At query time, the
@@ -36,13 +23,12 @@ different configs, not two separate copy-pasted scripts.
 
 | Metric | Baseline (Simple) | Engineered (Improved) |
 |---|---|---|
-| Hit Rate (K=5) | __% | __% |
-| MRR | 0.__ | 0.__ |
-| Groundedness | __% | __% |
-| Factual Accuracy | __% | __% |
-| Hallucination Rate | __% | __% |
+| Hit Rate (K=5) | 20.73% | 45.12% |
+| MRR | 0.1742 | 0.3182 |
+| Groundedness | NA | 29.88% |
+| Factual Accuracy | 0% | 0% |
+| Hallucination Rate | 0% | 0% |
 
-*(Fill in after running the notebook end-to-end — see Setup below.)*
 
 ## Part 2: Engineering Reflection
 
