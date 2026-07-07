@@ -1,8 +1,11 @@
 # Financial RAG Challenge
 
 **Name:** Zainab Ali
+
 **Recent Years Used:** 2018-2025
+
 **Data Source:** [Databricks OfficeQA](https://huggingface.co/datasets/databricks/officeqa)
+
 **GitHub Link:** https://github.com/zainabali0822-cmd/The-Financial-RAG-Challenge
 
 A Baseline vs. Engineered Retrieval-Augmented Generation (RAG) system for answering
